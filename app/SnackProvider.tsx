@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
-import { ErrorIcon, SuccessIcon } from '@/components/icons/SnackIcons';
+import { ErrorIcon, InfoIcon, SuccessIcon } from '@/components/icons/SnackIcons';
 
-type Variant = 'success' | 'error';
+type Variant = 'success' | 'error' | 'info';
 
 interface SnackContextType {
   createSnack: (message: any, variant: Variant) => void;
@@ -33,7 +33,7 @@ interface Snack {
 export const SnackProvider: React.FC<SnackProviderProps> = ({ children }) => {
   const [snacks, setSnacks] = useState<Snack[]>([]);
 
-  const createSnack = useCallback((message: any, variant: 'success' | 'error') => {
+  const createSnack = useCallback((message: any, variant: Variant) => {
     const id = Date.now();
     const newSnack = { id, message, variant, visible: true };
     setSnacks([newSnack]);
@@ -76,7 +76,9 @@ const getVariantIcon = (variant: Variant) => {
     return <SuccessIcon />;
   case 'error':
     return <ErrorIcon />;
+  case 'info':
+    return <InfoIcon />;
   default:
-    throw new Error(`Unknown variant: ${variant}`);
+    return <InfoIcon />;
   }
 };

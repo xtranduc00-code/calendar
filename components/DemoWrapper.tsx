@@ -36,18 +36,28 @@ function dbToEvent(row: DbEvent): CalendarEvent {
   };
 }
 
+type PushStatus = 'checking' | 'ok' | 'unsupported' | 'no-permission' | 'error' | null;
+
 export default function DemoWrapper() {
   const { createSnack } = useSnack();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pushStatus, setPushStatus] = useState<PushStatus>(null);
+  const [pushMessage, setPushMessage] = useState<string>('');
 
   useEffect(() => {
     const registerPush = async () => {
+      setPushStatus('checking');
+      setPushMessage('');
       if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+        setPushStatus('unsupported');
+        setPushMessage('Trên iPhone: Thêm vào Màn hình chính rồi mở từ icon (iOS 16.4+)');
         createSnack('Trình duyệt không hỗ trợ nhắc lịch. Trên iPhone: Thêm vào Màn hình chính rồi mở từ icon (iOS 16.4+)', 'info');
         return;
       }
       if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+        setPushStatus('error');
+        setPushMessage('Chưa cấu hình push trên server');
         createSnack('Chưa cấu hình push — nhắc lịch sẽ không gửi được', 'error');
         return;
       }
@@ -55,6 +65,8 @@ export default function DemoWrapper() {
         const reg = await navigator.serviceWorker.ready;
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
+          setPushStatus('no-permission');
+          setPushMessage('Bật Thông báo trong Cài đặt → trang web Calendar');
           createSnack('Bạn đã tắt thông báo. Bật lại trong Cài đặt → [Trang web/Calendar] → Thông báo để nhận nhắc lịch.', 'info');
           return;
         }
@@ -70,12 +82,19 @@ export default function DemoWrapper() {
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          createSnack('Không đăng ký được nhắc lịch: ' + (err.error || res.statusText), 'error');
+          const errMsg = (err as { error?: string }).error || res.statusText;
+          setPushStatus('error');
+          setPushMessage(errMsg);
+          createSnack('Không đăng ký được nhắc lịch: ' + errMsg, 'error');
           return;
         }
+        setPushStatus('ok');
+        setPushMessage('Sẽ nhận thông báo khi sắp tới sự kiện (không cần mở app)');
         createSnack('Đã bật nhắc lịch — bạn sẽ nhận thông báo khi sắp tới sự kiện (không cần mở app).', 'success');
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        setPushStatus('error');
+        setPushMessage('Trên iPhone: mở từ icon Màn hình chính (iOS 16.4+). Lỗi: ' + msg);
         createSnack(
           'Không bật được nhắc lịch. Trên iPhone: mở app từ icon Màn hình chính (không mở Safari), iOS 16.4+. Lỗi: ' + msg,
           'error',
@@ -230,6 +249,24 @@ export default function DemoWrapper() {
 
   return (
     <div className="relative flex h-screen max-h-screen w-full flex-col gap-4 px-4 pt-4 items-center justify-center">
+      {pushStatus !== null && (
+        <div
+          className={`absolute top-2 left-2 right-2 z-40 rounded-lg px-3 py-2 text-sm shadow md:left-4 md:right-auto md:max-w-md ${
+            pushStatus === 'ok'
+              ? 'bg-emerald-100 text-emerald-800'
+              : pushStatus === 'checking'
+                ? 'bg-slate-100 text-slate-600'
+                : 'bg-amber-100 text-amber-900'
+          }`}
+          role="status"
+        >
+          {pushStatus === 'checking' && 'Đang kiểm tra nhắc lịch...'}
+          {pushStatus === 'ok' && '✓ Nhắc lịch: ' + pushMessage}
+          {(pushStatus === 'unsupported' || pushStatus === 'no-permission' || pushStatus === 'error') && (
+            <>Nhắc lịch: {pushMessage}</>
+          )}
+        </div>
+      )}
       {loading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/70">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
