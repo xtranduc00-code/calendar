@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import webpush from 'web-push';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import webpush from "web-push";
 
 webpush.setVapidDetails(
   process.env.VAPID_EMAIL!,
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
+  process.env.VAPID_PRIVATE_KEY!,
 );
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
 );
 
 export async function GET() {
@@ -18,16 +18,16 @@ export async function GET() {
 
   // Lấy tất cả events có reminder trong 2 phút tới (để không bỏ sót)
   const { data: events } = await supabase
-    .from('events')
-    .select('*')
-    .not('reminder_minutes', 'is', null)
-    .gt('start', now.toISOString());
+    .from("events")
+    .select("*")
+    .not("reminder_minutes", "is", null)
+    .gt("start", now.toISOString());
 
   if (!events || events.length === 0) {
     return NextResponse.json({ sent: 0 });
   }
 
-  const { data: subs } = await supabase.from('push_subscriptions').select('*');
+  const { data: subs } = await supabase.from("push_subscriptions").select("*");
   if (!subs || subs.length === 0) {
     return NextResponse.json({ sent: 0 });
   }
@@ -44,28 +44,33 @@ export async function GET() {
     if (diff >= -30_000 && diff <= 60_000) {
       const minutesLeft = Math.round((startTime - now.getTime()) / 60_000);
       const payload = JSON.stringify({
-        title: '📅 Nhắc nhở sự kiện',
+        title: "📅 Nhắc nhở sự kiện",
         body: `${ev.name} — còn ${minutesLeft} phút nữa`,
         tag: `reminder-${ev.id}`,
-        url: '/',
+        url: "/",
       });
 
       const deadSubs: string[] = [];
       await Promise.all(
         subs.map(async (s) => {
           try {
-            const sub = JSON.parse(s.subscription as string) as webpush.PushSubscription;
+            const sub = JSON.parse(
+              s.subscription as string,
+            ) as webpush.PushSubscription;
             await webpush.sendNotification(sub, payload);
             sent++;
           } catch {
             deadSubs.push(s.endpoint as string);
           }
-        })
+        }),
       );
 
       // Xóa subscription đã hết hạn
       if (deadSubs.length > 0) {
-        await supabase.from('push_subscriptions').delete().in('endpoint', deadSubs);
+        await supabase
+          .from("push_subscriptions")
+          .delete()
+          .in("endpoint", deadSubs);
       }
     }
   }
