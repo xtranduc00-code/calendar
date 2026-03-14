@@ -290,12 +290,14 @@ export default function DemoWrapper() {
                 try {
                   const res = await fetch('/api/test-push');
                   const data = await res.json().catch(() => ({}));
-                  if (res.ok && (data as { sent?: number }).sent > 0) {
+                  const sent = (data as { sent?: number }).sent ?? 0;
+                  const errMsg = (data as { error?: string }).error;
+                  if (res.ok && sent > 0) {
                     createSnack('Test notification sent — check your device.', 'success');
                   } else {
-                    createSnack((data as { error?: string }).error || 'No subscriptions to send to.', 'error');
+                    createSnack(errMsg || 'No subscriptions to send to.', 'error');
                   }
-                  if (!res.ok && (data as { error?: string }).error?.includes('RLS')) {
+                  if (!res.ok && errMsg?.includes('RLS')) {
                     createSnack('Tip: In Supabase, allow SELECT on push_subscriptions for anon (or disable RLS for that table).', 'info');
                   }
                 } catch (e) {
