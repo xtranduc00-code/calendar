@@ -72,7 +72,7 @@ export function AddEventModal({ isOpen, onClose, onSave, initialDate, editEvent 
   const [name, setName] = useState('');
   const [startStr, setStartStr] = useState(toDatetimeLocal(defaultStart));
   const [endStr, setEndStr] = useState(toDatetimeLocal(defaultEnd));
-  const [color, setColor] = useState(DEFAULT_COLOR);
+  const [color, setColor] = useState<string>(DEFAULT_COLOR);
   const [notes, setNotes] = useState('');
   const [recurrence, setRecurrence] = useState<RecurrenceType>('none');
   const [recurrenceEndStr, setRecurrenceEndStr] = useState('');

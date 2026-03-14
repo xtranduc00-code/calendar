@@ -21,7 +21,7 @@ function loadNotifiedIds(): Set<string> {
 function saveNotifiedIds(ids: Set<string>) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify([...ids]));
+    localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify(Array.from(ids)));
   } catch {
     // ignore
   }
