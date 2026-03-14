@@ -1,9 +1,8 @@
+# React Calendar
 
-# React Continuous Calendar
+Calendar is a bare-bones calendar built with React and Tailwindcss. It does not include event creation and display, as that's left up to your discretion.
 
-Continuous Calendar is a bare-bones calendar built with React and Tailwindcss. It does not include event creation and display, as that's left up to your discretion.
-
-### [Live Demo](https://continuous-calendar.vercel.app/)
+### [Live Demo](https://calendar.vercel.app/)
 
 ### So what does it do? ✨
 
@@ -11,7 +10,6 @@ Continuous Calendar is a bare-bones calendar built with React and Tailwindcss. I
 - Allows for quick-navigation to specific months and Today.
 - Clicking on a cell triggers the onClick event with (day, month, year).
 - Responsive; supports mobile, tablet, and desktop views.
-
 
 ### Installation 💻
 
@@ -49,9 +47,9 @@ select {
 
 ### Props ❄️
 
-Prop | Required | Type | Description
---- | --- | --- | --- |
-onClick | Optional | `(day:number, month: number, year: number) => void;` | Triggered whenever the user clicks a day on the calendar. |
+| Prop    | Required | Type                                                 | Description                                               |
+| ------- | -------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| onClick | Optional | `(day:number, month: number, year: number) => void;` | Triggered whenever the user clicks a day on the calendar. |
 
 ### Height and Width 🎨
 
@@ -60,7 +58,6 @@ The height and width of the calendar component rely on a parent wrapper. Please 
 ### Contribution 🔮
 
 If you wish to contribute to this project, clone the repo and run it locally using `npm run dev`.
-
 
 ## Screenshots
 
@@ -73,4 +70,3 @@ If you wish to contribute to this project, clone the repo and run it locally usi
 ## Inspiration
 
 ![App Screenshot](https://i.postimg.cc/qk1gyQGF/Screenshot-2024-08-19-at-10-45-56-PM.png)
-

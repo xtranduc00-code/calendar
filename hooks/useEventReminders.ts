@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import type { CalendarEvent } from '@/components/AddEventModal';
+import { useEffect, useRef } from "react";
+import type { CalendarEvent } from "@/components/AddEventModal";
 
-const REMINDER_STORAGE_KEY = 'continuous-calendar-reminded';
+const REMINDER_STORAGE_KEY = "calendar-reminded";
 const CHECK_INTERVAL_MS = 30_000; // 30 seconds
 
 function loadNotifiedIds(): Set<string> {
-  if (typeof window === 'undefined') return new Set();
+  if (typeof window === "undefined") return new Set();
   try {
     const raw = localStorage.getItem(REMINDER_STORAGE_KEY);
     if (!raw) return new Set();
@@ -19,7 +19,7 @@ function loadNotifiedIds(): Set<string> {
 }
 
 function saveNotifiedIds(ids: Set<string>) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify(Array.from(ids)));
   } catch {
@@ -31,10 +31,10 @@ export function useEventReminders(events: CalendarEvent[]) {
   const notifiedRef = useRef<Set<string>>(loadNotifiedIds());
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (typeof window === "undefined" || !("Notification" in window)) return;
 
     const requestPermission = () => {
-      if (Notification.permission === 'default') {
+      if (Notification.permission === "default") {
         Notification.requestPermission();
       }
     };
@@ -48,12 +48,16 @@ export function useEventReminders(events: CalendarEvent[]) {
         const start = ev.start.getTime();
         const windowStart = start - reminder * 60 * 1000;
         const windowEnd = start + 60 * 1000; // 1 min after start
-        if (now >= windowStart && now <= windowEnd && !notifiedRef.current.has(ev.id)) {
+        if (
+          now >= windowStart &&
+          now <= windowEnd &&
+          !notifiedRef.current.has(ev.id)
+        ) {
           try {
-            if (Notification.permission === 'granted') {
-              new Notification('Event reminder', {
+            if (Notification.permission === "granted") {
+              new Notification("Event reminder", {
                 body: `${ev.name} — reminder (${reminder} min before)`,
-                icon: '/next.svg',
+                icon: "/next.svg",
               });
               notifiedRef.current.add(ev.id);
               saveNotifiedIds(notifiedRef.current);

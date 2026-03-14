@@ -6,8 +6,14 @@ import { SnackProvider } from "./SnackProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Continuous Calendar",
-  description: "A simple, fully customizable React Calendar, styled with Tailwindcss.",
+  title: "Calendar",
+  description: "Shared calendar with push reminders",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Calendar",
+  },
 };
 
 export default function RootLayout({
@@ -17,10 +23,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="bg-gray-200">
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Calendar" />
+        <meta name="theme-color" content="#06b6d4" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body className={inter.className}>
         <SnackProvider>
           {children}
-        </ SnackProvider>
+        </SnackProvider>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js');
+              });
+            }
+          `
+        }} />
       </body>
     </html>
   );

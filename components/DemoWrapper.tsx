@@ -42,6 +42,30 @@ export default function DemoWrapper() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const registerPush = async () => {
+      if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+        const existing = await reg.pushManager.getSubscription();
+        const sub = existing ?? await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        });
+        await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON() }),
+        });
+      } catch {
+        // ignore
+      }
+    };
+    registerPush();
+  }, []);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       const { data, error } = await supabase
         .from('events')
