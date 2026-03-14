@@ -105,17 +105,33 @@ export default function DemoWrapper() {
   }, [createSnack]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('start', { ascending: true });
-      if (error) {
-        createSnack('Failed to load events', 'error');
-      } else {
-        setEvents((data as DbEvent[]).map(dbToEvent));
-      }
+    if (typeof window === 'undefined') return;
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
       setLoading(false);
+      createSnack('Missing Supabase env (NEXT_PUBLIC_SUPABASE_URL or _KEY). Check .env.local.', 'error');
+      return;
+    }
+
+    const fetchEvents = async () => {
+      try {
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timed out (15s). Check Supabase URL and network.')), 15_000)
+        );
+        const { data, error } = await Promise.race([
+          supabase.from('events').select('*').order('start', { ascending: true }),
+          timeout,
+        ]);
+        if (error) {
+          createSnack(`Failed to load events: ${error.message}`, 'error');
+        } else {
+          setEvents((data as DbEvent[]).map(dbToEvent));
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        createSnack(`Failed to load events: ${msg}`, 'error');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchEvents();
 
@@ -127,7 +143,7 @@ export default function DemoWrapper() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [createSnack]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalInitialDate, setAddModalInitialDate] = useState<Date | undefined>(undefined);
