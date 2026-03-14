@@ -251,7 +251,7 @@ export default function DemoWrapper() {
     <div className="relative flex h-screen max-h-screen w-full flex-col gap-4 px-4 pt-4 items-center justify-center">
       {pushStatus !== null && (
         <div
-          className={`absolute top-2 left-2 right-2 z-40 rounded-lg px-3 py-2 text-sm shadow md:left-4 md:right-auto md:max-w-md ${
+          className={`absolute top-2 left-2 right-2 z-40 flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 text-sm shadow md:left-4 md:right-auto md:max-w-lg ${
             pushStatus === 'ok'
               ? 'bg-emerald-100 text-emerald-800'
               : pushStatus === 'checking'
@@ -260,10 +260,33 @@ export default function DemoWrapper() {
           }`}
           role="status"
         >
-          {pushStatus === 'checking' && 'Checking reminders...'}
-          {pushStatus === 'ok' && '✓ Reminders: ' + pushMessage}
-          {(pushStatus === 'unsupported' || pushStatus === 'no-permission' || pushStatus === 'error') && (
-            <>Reminders: {pushMessage}</>
+          <span className="min-w-0 flex-1">
+            {pushStatus === 'checking' && 'Checking reminders...'}
+            {pushStatus === 'ok' && '✓ Reminders: ' + pushMessage}
+            {(pushStatus === 'unsupported' || pushStatus === 'no-permission' || pushStatus === 'error') && (
+              <>Reminders: {pushMessage}</>
+            )}
+          </span>
+          {pushStatus === 'ok' && (
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/test-push');
+                  const data = await res.json().catch(() => ({}));
+                  if (res.ok && (data as { sent?: number }).sent > 0) {
+                    createSnack('Test notification sent — check your device.', 'success');
+                  } else {
+                    createSnack((data as { error?: string }).error || 'No subscriptions to send to.', 'error');
+                  }
+                } catch (e) {
+                  createSnack('Failed to send test: ' + (e instanceof Error ? e.message : String(e)), 'error');
+                }
+              }}
+              className="shrink-0 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+            >
+              Test notification
+            </button>
           )}
         </div>
       )}
