@@ -31,7 +31,11 @@ export async function GET() {
   if (!subs || subs.length === 0) {
     return NextResponse.json({ sent: 0 });
   }
-
+  console.log("SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log(
+    "SUPABASE_KEY prefix:",
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.slice(0, 20),
+  );
   let sent = 0;
 
   for (const ev of events) {
