@@ -4,6 +4,11 @@
   "description": "Shared calendar with push reminders",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#e5e7eb",
-  "theme_color": "#06b6d4"
+  "theme_color": "#06b6d4",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon", "purpose": "any" },
+    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon", "purpose": "maskable" }
+  ]
 }
