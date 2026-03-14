@@ -55,6 +55,39 @@ select {
 
 The height and width of the calendar component rely on a parent wrapper. Please refer to `components/DemoWrapper.tsx` as an example of how to structure your React component to achieve your desired calendar size.
 
+### Push notifications (Supabase) 🔔
+
+The app stores push subscriptions in Supabase. Create table and policies:
+
+**Table `push_subscriptions`:**
+
+```sql
+create table public.push_subscriptions (
+  endpoint text primary key,
+  subscription text not null
+);
+```
+
+**RLS:** enable RLS, then allow anonymous insert and select so the app and cron can work:
+
+```sql
+alter table public.push_subscriptions enable row level security;
+
+create policy "Allow anon insert"
+  on public.push_subscriptions for insert to anon
+  with check (true);
+
+create policy "Allow anon select"
+  on public.push_subscriptions for select to anon
+  using (true);
+
+create policy "Allow anon delete"
+  on public.push_subscriptions for delete to anon
+  using (true);
+```
+
+If you see "No subscriptions" when testing: open the app from the **Home Screen icon** (not Safari), allow notifications, reload — then try "Test notification" again.
+
 ### Contribution 🔮
 
 If you wish to contribute to this project, clone the repo and run it locally using `npm run dev`.

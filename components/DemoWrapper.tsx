@@ -279,6 +279,9 @@ export default function DemoWrapper() {
                   } else {
                     createSnack((data as { error?: string }).error || 'No subscriptions to send to.', 'error');
                   }
+                  if (!res.ok && (data as { error?: string }).error?.includes('RLS')) {
+                    createSnack('Tip: In Supabase, allow SELECT on push_subscriptions for anon (or disable RLS for that table).', 'info');
+                  }
                 } catch (e) {
                   createSnack('Failed to send test: ' + (e instanceof Error ? e.message : String(e)), 'error');
                 }

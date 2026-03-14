@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  await supabase
+  const { error } = await supabase
     .from("push_subscriptions")
     .upsert(
       {
@@ -25,6 +25,13 @@ export async function POST(req: NextRequest) {
       },
       { onConflict: "endpoint" },
     );
+  if (error) {
+    console.error("push_subscriptions upsert failed:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to save subscription" },
+      { status: 500 },
+    );
+  }
   return NextResponse.json({ ok: true });
 }
 

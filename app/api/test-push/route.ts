@@ -15,9 +15,21 @@ const supabase = createClient(
 
 /** GET: send one test notification to all push subscriptions (for manual testing). */
 export async function GET() {
-  const { data: subs } = await supabase.from("push_subscriptions").select("*");
+  const { data: subs, error: fetchError } = await supabase
+    .from("push_subscriptions")
+    .select("*");
+  if (fetchError) {
+    console.error("push_subscriptions select failed:", fetchError);
+    return NextResponse.json(
+      { sent: 0, error: `Database error: ${fetchError.message}. Check table "push_subscriptions" exists and RLS allows SELECT.` },
+      { status: 500 },
+    );
+  }
   if (!subs || subs.length === 0) {
-    return NextResponse.json({ sent: 0, error: "No subscriptions" }, { status: 400 });
+    return NextResponse.json({
+      sent: 0,
+      error: "No subscriptions. Add this app to Home Screen, allow notifications, then reload. If it still fails, enable RLS policies for push_subscriptions (see README).",
+    }, { status: 400 });
   }
 
   const payload = JSON.stringify({
