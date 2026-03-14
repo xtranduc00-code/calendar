@@ -3,6 +3,7 @@
 import React from 'react';
 import type { CalendarEvent } from './AddEventModal';
 import { expandRecurringEvents } from '@/lib/recurrence';
+import { EventStatusBadge } from '@/lib/EventStatusBadge';
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -78,9 +79,12 @@ export function DayDetailModal({ isOpen, onClose, date, events, onAddEvent, onEd
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <span className="font-medium text-slate-800">{ex.event.name}</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-slate-800">{ex.event.name}</span>
+                        <EventStatusBadge start={ex.start} end={ex.end} />
+                      </div>
                       {ex.event.recurrence && ex.event.recurrence !== 'none' && (
-                        <span className="ml-2 text-xs text-slate-400">(Repeats {ex.event.recurrence})</span>
+                        <span className="ml-0 mt-1 block text-xs text-slate-400">(Repeats {ex.event.recurrence})</span>
                       )}
                       <span className="mt-1 block text-sm text-slate-500">
                         {formatEventTimeRange(ex.start, ex.end)}

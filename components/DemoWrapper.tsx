@@ -51,14 +51,14 @@ export default function DemoWrapper() {
       setPushMessage('');
       if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
         setPushStatus('unsupported');
-        setPushMessage('Trên iPhone: Thêm vào Màn hình chính rồi mở từ icon (iOS 16.4+)');
-        createSnack('Trình duyệt không hỗ trợ nhắc lịch. Trên iPhone: Thêm vào Màn hình chính rồi mở từ icon (iOS 16.4+)', 'info');
+        setPushMessage('On iPhone: Add to Home Screen, then open from the icon (iOS 16.4+)');
+        createSnack('Push not supported in this browser. On iPhone: Add to Home Screen, then open from the icon (iOS 16.4+)', 'info');
         return;
       }
       if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
         setPushStatus('error');
-        setPushMessage('Chưa cấu hình push trên server');
-        createSnack('Chưa cấu hình push — nhắc lịch sẽ không gửi được', 'error');
+        setPushMessage('Push not configured on server');
+        createSnack('Push not configured — reminders will not be sent', 'error');
         return;
       }
       try {
@@ -66,8 +66,8 @@ export default function DemoWrapper() {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
           setPushStatus('no-permission');
-          setPushMessage('Bật Thông báo trong Cài đặt → trang web Calendar');
-          createSnack('Bạn đã tắt thông báo. Bật lại trong Cài đặt → [Trang web/Calendar] → Thông báo để nhận nhắc lịch.', 'info');
+          setPushMessage('Enable Notifications in Settings → Calendar website');
+          createSnack('Notifications denied. Enable in Settings → [Website/Calendar] → Notifications to get reminders.', 'info');
           return;
         }
         const existing = await reg.pushManager.getSubscription();
@@ -85,18 +85,18 @@ export default function DemoWrapper() {
           const errMsg = (err as { error?: string }).error || res.statusText;
           setPushStatus('error');
           setPushMessage(errMsg);
-          createSnack('Không đăng ký được nhắc lịch: ' + errMsg, 'error');
+          createSnack('Could not register for reminders: ' + errMsg, 'error');
           return;
         }
         setPushStatus('ok');
-        setPushMessage('Sẽ nhận thông báo khi sắp tới sự kiện (không cần mở app)');
-        createSnack('Đã bật nhắc lịch — bạn sẽ nhận thông báo khi sắp tới sự kiện (không cần mở app).', 'success');
+        setPushMessage('You’ll get notifications when events are coming up (app can be closed)');
+        createSnack('Reminders enabled — you’ll get notifications when events are coming up (app can be closed).', 'success');
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         setPushStatus('error');
-        setPushMessage('Trên iPhone: mở từ icon Màn hình chính (iOS 16.4+). Lỗi: ' + msg);
+        setPushMessage('On iPhone: open from Home Screen icon (iOS 16.4+). Error: ' + msg);
         createSnack(
-          'Không bật được nhắc lịch. Trên iPhone: mở app từ icon Màn hình chính (không mở Safari), iOS 16.4+. Lỗi: ' + msg,
+          'Could not enable reminders. On iPhone: open the app from the Home Screen icon (not Safari), iOS 16.4+. Error: ' + msg,
           'error',
         );
       }
@@ -260,10 +260,10 @@ export default function DemoWrapper() {
           }`}
           role="status"
         >
-          {pushStatus === 'checking' && 'Đang kiểm tra nhắc lịch...'}
-          {pushStatus === 'ok' && '✓ Nhắc lịch: ' + pushMessage}
+          {pushStatus === 'checking' && 'Checking reminders...'}
+          {pushStatus === 'ok' && '✓ Reminders: ' + pushMessage}
           {(pushStatus === 'unsupported' || pushStatus === 'no-permission' || pushStatus === 'error') && (
-            <>Nhắc lịch: {pushMessage}</>
+            <>Reminders: {pushMessage}</>
           )}
         </div>
       )}

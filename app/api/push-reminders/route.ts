@@ -16,7 +16,7 @@ const supabase = createClient(
 export async function GET() {
   const now = new Date();
 
-  // Lấy tất cả events có reminder trong 2 phút tới (để không bỏ sót)
+  // Fetch all events with a reminder in the next 2 minutes (so we don't miss any)
   const { data: events } = await supabase
     .from("events")
     .select("*")
@@ -44,12 +44,12 @@ export async function GET() {
     const triggerTime = startTime - reminderMs;
     const diff = triggerTime - now.getTime();
 
-    // Gửi nếu còn trong khoảng [-30s, +60s] so với thời điểm cần nhắc
+    // Send if within [-30s, +60s] of the reminder time
     if (diff >= -30_000 && diff <= 60_000) {
       const minutesLeft = Math.round((startTime - now.getTime()) / 60_000);
       const payload = JSON.stringify({
-        title: "📅 Nhắc nhở sự kiện",
-        body: `${ev.name} — còn ${minutesLeft} phút nữa`,
+        title: "📅 Event reminder",
+        body: `${ev.name} — in ${minutesLeft} min`,
         tag: `reminder-${ev.id}`,
         url: "/",
       });
@@ -69,7 +69,7 @@ export async function GET() {
         }),
       );
 
-      // Xóa subscription đã hết hạn
+      // Remove expired subscriptions
       if (deadSubs.length > 0) {
         await supabase
           .from("push_subscriptions")

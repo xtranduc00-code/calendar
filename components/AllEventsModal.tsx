@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { CalendarEvent } from './AddEventModal';
+import { EventStatusBadge } from '@/lib/EventStatusBadge';
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -101,9 +102,12 @@ export function AllEventsModal({ isOpen, onClose, events, onEditEvent, onRequest
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <span className="font-medium text-slate-800">{ev.name}</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-slate-800">{ev.name}</span>
+                        <EventStatusBadge start={ev.start} end={ev.end} />
+                      </div>
                       {ev.recurrence && ev.recurrence !== 'none' && (
-                        <span className="ml-2 text-xs text-slate-400">(Repeats {ev.recurrence})</span>
+                        <span className="ml-0 mt-1 block text-xs text-slate-400">(Repeats {ev.recurrence})</span>
                       )}
                       <span className="mt-1 block text-sm text-slate-500">
                         {formatEventDateRange(ev.start, ev.end)}
