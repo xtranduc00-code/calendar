@@ -43,27 +43,47 @@ export default function DemoWrapper() {
 
   useEffect(() => {
     const registerPush = async () => {
-      if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+        createSnack('Trình duyệt không hỗ trợ nhắc lịch. Trên iPhone: Thêm vào Màn hình chính rồi mở từ icon (iOS 16.4+)', 'info');
+        return;
+      }
+      if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+        createSnack('Chưa cấu hình push — nhắc lịch sẽ không gửi được', 'error');
+        return;
+      }
       try {
         const reg = await navigator.serviceWorker.ready;
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
+        if (permission !== 'granted') {
+          createSnack('Bạn đã tắt thông báo. Bật lại trong Cài đặt → [Trang web/Calendar] → Thông báo để nhận nhắc lịch.', 'info');
+          return;
+        }
         const existing = await reg.pushManager.getSubscription();
         const sub = existing ?? await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         });
-        await fetch('/api/subscribe', {
+        const res = await fetch('/api/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ subscription: sub.toJSON() }),
         });
-      } catch {
-        // ignore
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          createSnack('Không đăng ký được nhắc lịch: ' + (err.error || res.statusText), 'error');
+          return;
+        }
+        createSnack('Đã bật nhắc lịch — bạn sẽ nhận thông báo khi sắp tới sự kiện (không cần mở app).', 'success');
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        createSnack(
+          'Không bật được nhắc lịch. Trên iPhone: mở app từ icon Màn hình chính (không mở Safari), iOS 16.4+. Lỗi: ' + msg,
+          'error',
+        );
       }
     };
     registerPush();
-  }, []);
+  }, [createSnack]);
 
   useEffect(() => {
     const fetchEvents = async () => {
